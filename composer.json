@@ -1,0 +1,19 @@
+{
+    "name": "tomwright/extended-pdo",
+    "description": "An extension on the standard PDO library.",
+    "authors": [
+        {
+            "name": "Tom Wright",
+            "email": "contact@tomwright.me"
+        }
+    ],
+    "require": {
+        "phpunit/phpunit": "*",
+        "tomwright/singleton": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "TomWright\\Database\\ExtendedPDO\\": "src/"
+        }
+    }
+}
