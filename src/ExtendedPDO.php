@@ -59,11 +59,12 @@ class ExtendedPDO extends \PDO
      * @param string $sql
      * @param array|null $bind
      * @param bool $obj
+     * @param bool $returnStmt
      * @return bool|\PDOStatement
      */
-    public function queryRow($sql, array $bind = null, $obj = true)
+    public function queryRow($sql, array $bind = null, $obj = true, $returnStmt = false)
     {
-        return $this->dbQuery($sql, $bind, 'row', $obj);
+        return $this->dbQuery($sql, $bind, 'row', $obj, $returnStmt);
     }
 
 
@@ -71,11 +72,12 @@ class ExtendedPDO extends \PDO
      * @param string $sql
      * @param array|null $bind
      * @param bool $obj
+     * @param bool $returnStmt
      * @return bool|\PDOStatement
      */
-    public function queryAll($sql, array $bind = null, $obj = true)
+    public function queryAll($sql, array $bind = null, $obj = true, $returnStmt = false)
     {
-        return $this->dbQuery($sql, $bind, 'all', $obj);
+        return $this->dbQuery($sql, $bind, 'all', $obj, $returnStmt);
     }
 
 
