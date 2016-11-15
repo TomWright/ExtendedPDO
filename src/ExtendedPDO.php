@@ -27,7 +27,14 @@ class ExtendedPDO extends \PDO
     protected $defaultQueryResponse = null;
 
 
-    public function __construct($dsn, $username, $passwd, $options)
+    /**
+     * ExtendedPDO constructor.
+     * @param string $dsn
+     * @param string $username
+     * @param string $passwd
+     * @param array $options
+     */
+    public function __construct($dsn, $username, $passwd, $options = array())
     {
         parent::__construct($dsn, $username, $passwd, $options);
         $this->queryHelper = new QueryHelper();
