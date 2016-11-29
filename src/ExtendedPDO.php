@@ -179,4 +179,20 @@ class ExtendedPDO extends \PDO
         $this->defaultQueryResponse = $defaultQueryResponse;
     }
 
+
+    /**
+     * Extracts the host from the current connection.
+     * @return null|string
+     */
+    public function getHost()
+    {
+        $result = null;
+        $status = $this->getAttribute(\PDO::ATTR_CONNECTION_STATUS);
+        $spacePos = strpos($status, ' ');
+        if ($spacePos !== false) {
+            $result = substr($status, 0, $spacePos);
+        }
+        return $result;
+    }
+
 }
