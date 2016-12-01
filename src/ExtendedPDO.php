@@ -26,6 +26,11 @@ class ExtendedPDO extends \PDO
      */
     protected $defaultQueryResponse = null;
 
+    /**
+     * @var string
+     */
+    protected $dsn;
+
 
     /**
      * ExtendedPDO constructor.
@@ -37,6 +42,7 @@ class ExtendedPDO extends \PDO
     public function __construct($dsn, $username, $passwd, $options = array())
     {
         parent::__construct($dsn, $username, $passwd, $options);
+        $this->setDsn($dsn);
         $this->queryHelper = new QueryHelper();
     }
 
@@ -193,6 +199,24 @@ class ExtendedPDO extends \PDO
             $result = substr($status, 0, $spacePos);
         }
         return $result;
+    }
+
+
+    /**
+     * @return string
+     */
+    public function getDsn()
+    {
+        return $this->dsn;
+    }
+
+
+    /**
+     * @param string $dsn
+     */
+    protected function setDsn(string $dsn)
+    {
+        $this->dsn = $dsn;
     }
 
 }
