@@ -13,6 +13,17 @@
         <const name="PHPUNIT_CHARSET" value="UTF-8" />
         <server name="REMOTE_ADDR" value="0.0.0.0" />
     </php>
+    <filter>
+        <whitelist processUncoveredFilesFromWhitelist="false">
+            <directory suffix=".php">src</directory>
+        </whitelist>
+    </filter>
+    <logging>
+        <log type="coverage-html" target="build/coverage"/>
+        <log type="coverage-clover" target="build/logs/clover.xml"/>
+        <log type="coverage-crap4j" target="build/logs/crap4j.xml"/>
+        <log type="junit" target="build/logs/junit.xml" logIncompleteSkipped="false"/>
+    </logging>
     <testsuites>
         <testsuite name="Default">
             <directory>tests</directory>
