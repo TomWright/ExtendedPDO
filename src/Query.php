@@ -290,6 +290,19 @@ class Query
 
 
     /**
+     * @param string $orderBy
+     * @return $this
+     */
+    public function addOrderBy($orderBy)
+    {
+        if (! in_array($orderBy, $this->orderBys)) {
+            $this->orderBys[] = $orderBy;
+        }
+        return $this;
+    }
+
+
+    /**
      * @return array|\string[]
      */
     public function getGroupBys()
