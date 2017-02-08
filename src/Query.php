@@ -117,10 +117,12 @@ class Query
 
     /**
      * @param string $type
+     * @return $this
      */
     public function setType($type)
     {
         $this->type = strtoupper($type);
+        return $this;
     }
 
 
@@ -135,15 +137,18 @@ class Query
 
     /**
      * @param array|\string[] $fields
+     * @return $this
      */
     public function setFields($fields)
     {
         $this->fields = $fields;
+        return $this;
     }
 
 
     /**
      * @param string $field
+     * @return $this
      */
     public function addField($field)
     {
@@ -153,6 +158,7 @@ class Query
         if (! in_array($field, $this->fields)) {
             $this->fields[] = $field;
         }
+        return $this;
     }
 
 
@@ -167,10 +173,12 @@ class Query
 
     /**
      * @param string $table
+     * @return $this
      */
     public function setTable($table)
     {
         $this->table = $table;
+        return $this;
     }
 
 
@@ -185,21 +193,25 @@ class Query
 
     /**
      * @param array|Join[] $joins
+     * @return $this
      */
     public function setJoins($joins)
     {
         $this->joins = $joins;
+        return $this;
     }
 
 
     /**
      * @param Join $join
+     * @return $this
      */
     public function addJoin(Join $join)
     {
         if (! in_array($join, $this->joins)) {
             $this->joins[] = $join;
         }
+        return $this;
     }
 
 
@@ -214,10 +226,12 @@ class Query
 
     /**
      * @param array|\string[] $wheres
+     * @return $this
      */
     public function setWheres($wheres)
     {
         $this->wheres = $wheres;
+        return $this;
     }
 
 
@@ -225,6 +239,7 @@ class Query
      * @param string $column
      * @param mixed $value
      * @param bool $raw
+     * @return $this
      */
     public function addWhere($column, $value, $raw = false)
     {
@@ -235,12 +250,14 @@ class Query
             $column = static::$RAW_SQL_IDENTIFIER . $column;
         }
         $this->wheres[$column] = $value;
+        return $this;
     }
 
 
     /**
      * @param string $sql
      * @param string $reference
+     * @return $this
      */
     public function addRawWhere($sql, $reference = null)
     {
@@ -248,6 +265,7 @@ class Query
             $reference = rand();
         }
         $this->addWhere($reference, $sql, true);
+        return $this;
     }
 
 
@@ -262,10 +280,12 @@ class Query
 
     /**
      * @param array|\string[] $orderBys
+     * @return $this
      */
     public function setOrderBys($orderBys)
     {
         $this->orderBys = $orderBys;
+        return $this;
     }
 
 
@@ -280,21 +300,25 @@ class Query
 
     /**
      * @param array|\string[] $groupBys
+     * @return $this
      */
     public function setGroupBys($groupBys)
     {
         $this->groupBys = $groupBys;
+        return $this;
     }
 
 
     /**
      * @param string $groupBy
+     * @return $this
      */
     public function addGroupBy($groupBy)
     {
         if (! in_array($this->groupBys)) {
             $this->groupBys[] = $groupBy;
         }
+        return $this;
     }
 
 
@@ -309,10 +333,12 @@ class Query
 
     /**
      * @param int|null $limit
+     * @return $this
      */
     public function setLimit($limit)
     {
         $this->limit = $limit;
+        return $this;
     }
 
 
@@ -327,13 +353,18 @@ class Query
 
     /**
      * @param int|null $offset
+     * @return $this
      */
     public function setOffset($offset)
     {
         $this->offset = $offset;
+        return $this;
     }
 
 
+    /**
+     * @return $this
+     */
     protected function buildQueryType()
     {
         switch ($this->getType()) {
@@ -348,9 +379,13 @@ class Query
                 $this->sql .= "{$this->getType()} INTO";
                 break;
         }
+        return $this;
     }
 
 
+    /**
+     * @return $this
+     */
     protected function buildQueryTable()
     {
         switch ($this->getType()) {
@@ -363,9 +398,13 @@ class Query
                 $this->buildQueryFields();
                 break;
         }
+        return $this;
     }
 
 
+    /**
+     * @return $this
+     */
     protected function buildQueryFields()
     {
         $fieldsString = '';
@@ -389,14 +428,19 @@ class Query
         }
 
         $this->sql .= ' ' . $fieldsString;
+
+        return $this;
     }
 
 
+    /**
+     * @return $this
+     */
     protected function buildQueryJoins()
     {
         $validTypes = ['SELECT', 'UPDATE', 'DELETE'];
         if (! in_array($this->getType(), $validTypes)) {
-            return;
+            return $this;
         }
         $joins = $this->getJoins();
         if (is_array($joins) && count($joins) > 0) {
@@ -404,14 +448,18 @@ class Query
                 $this->sql .= " {$join->getType()} {$join->getTable()} ON {$join->getConditionsString()}";
             }
         }
+        return $this;
     }
 
 
+    /**
+     * @return $this
+     */
     protected function buildQueryWheres()
     {
         $validTypes = ['SELECT', 'UPDATE', 'DELETE'];
         if (! in_array($this->getType(), $validTypes)) {
-            return;
+            return $this;
         }
         $wheres = $this->getWheres();
 
@@ -458,14 +506,18 @@ class Query
 
             $this->sql .= ' ' . $whereString;
         }
+        return $this;
     }
 
 
+    /**
+     * @return $this
+     */
     protected function buildQueryGroupBys()
     {
         $validTypes = ['SELECT'];
         if (! in_array($this->getType(), $validTypes)) {
-            return;
+            return $this;
         }
         $groupBys = $this->getGroupBys();
         if (is_array($groupBys) && count($groupBys) > 0) {
@@ -477,14 +529,18 @@ class Query
             $groupByString = rtrim($groupByString, ',');
             $this->sql .= ' ' . $groupByString;
         }
+        return $this;
     }
 
 
+    /**
+     * @return $this
+     */
     protected function buildQueryOrderBys()
     {
         $validTypes = ['SELECT'];
         if (! in_array($this->getType(), $validTypes)) {
-            return;
+            return $this;
         }
         $orderBys = $this->getOrderBys();
         if (is_array($orderBys) && count($orderBys) > 0) {
@@ -496,33 +552,45 @@ class Query
             $orderByString = rtrim($orderByString, ',');
             $this->sql .= ' ' . $orderByString;
         }
+        return $this;
     }
 
 
+    /**
+     * @return $this
+     */
     protected function buildQueryOffset()
     {
         $validTypes = ['SELECT', 'UPDATE', 'DELETE'];
         if (! in_array($this->getType(), $validTypes)) {
-            return;
+            return $this;
         }
         if ($this->offset !== null) {
             $this->sql .= " OFFSET {$this->offset}";
         }
+        return $this;
     }
 
 
+    /**
+     * @return $this
+     */
     protected function buildQueryLimit()
     {
         $validTypes = ['SELECT', 'UPDATE', 'DELETE'];
         if (! in_array($this->getType(), $validTypes)) {
-            return;
+            return $this;
         }
         if ($this->offset !== null) {
             $this->sql .= " LIMIT {$this->limit}";
         }
+        return $this;
     }
 
 
+    /**
+     * @return $this
+     */
     public function buildQuery()
     {
         $this->sql = '';
@@ -570,6 +638,7 @@ class Query
 
     /**
      * @param array $binds
+     * @return $this
      */
     public function setBinds(array $binds)
     {
@@ -577,21 +646,27 @@ class Query
             return $this->setRuntimeBinds($binds);
         }
         $this->binds = $binds;
+        return $this;
     }
 
 
+    /**
+     * @return $this
+     */
     public function clearBinds()
     {
         if ($this->isBuilding()) {
             return $this->clearRuntimeBinds();
         }
         $this->setBinds([]);
+        return $this;
     }
 
 
     /**
      * @param string $name
      * @param mixed $value
+     * @return $this
      */
     public function addBind($name, $value)
     {
@@ -599,6 +674,7 @@ class Query
             return $this->addRuntimeBind($name, $value);
         }
         $this->binds[$name] = $value;
+        return $this;
     }
 
 
@@ -613,26 +689,34 @@ class Query
 
     /**
      * @param array $binds
+     * @return $this
      */
     public function setRuntimeBinds(array $binds)
     {
         $this->runtimeBinds = $binds;
+        return $this;
     }
 
 
+    /**
+     * @return $this
+     */
     public function clearRuntimeBinds()
     {
         $this->setRuntimeBinds([]);
+        return $this;
     }
 
 
     /**
      * @param string $name
      * @param mixed $value
+     * @return $this
      */
     public function addRuntimeBind($name, $value)
     {
         $this->runtimeBinds[$name] = $value;
+        return $this;
     }
 
 
@@ -647,10 +731,12 @@ class Query
 
     /**
      * @param bool $building
+     * @return $this
      */
     public function setBuilding($building)
     {
         $this->building = ($building == true);
+        return $this;
     }
 
 
@@ -665,20 +751,24 @@ class Query
 
     /**
      * @param array $values
+     * @return $this
      */
     public function setValues(array $values)
     {
         $this->values = $values;
+        return $this;
     }
 
 
     /**
      * @param string $name
      * @param mixed $value
+     * @return $this
      */
     public function addValue($name, $value)
     {
         $this->values[$name] = $value;
+        return $this;
     }
 
 }
