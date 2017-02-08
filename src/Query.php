@@ -288,6 +288,17 @@ class Query
 
 
     /**
+     * @param string $groupBy
+     */
+    public function addGroupBy($groupBy)
+    {
+        if (! in_array($this->groupBys)) {
+            $this->groupBys[] = $groupBy;
+        }
+    }
+
+
+    /**
      * @return int|null
      */
     public function getLimit()
