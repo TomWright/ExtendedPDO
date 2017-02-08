@@ -79,18 +79,24 @@ class Query
 
 
     /**
+     * @param Query|null $query
+     * @return Query
+     */
+    public static function get(Query $query = null)
+    {
+        if ($query === null) {
+            $query = new static();
+        }
+        return $query;
+    }
+
+
+    /**
      * Query constructor.
-     * @param string $type
      * @throws \Exception
      */
-    public function __construct($type)
+    public function __construct()
     {
-        $this->setType($type);
-        $validTypes = ['SELECT', 'INSERT', 'UPDATE', 'DELETE', 'DROP', 'TRUNCATE'];
-        if (! in_array($this->getType(), $validTypes)) {
-            throw new \Exception('Invalid Query Type. Must be one of: ' . implode(', ', $validTypes));
-        }
-
         $this->setFields(['*']);
         $this->setValues([]);
         $this->setRuntimeBinds([]);
