@@ -61,6 +61,26 @@ class QueryTest extends TestCase
             ':min_age' => 18,
             ':max_age' => 23,
         ], $q->getBinds());
+
+        $sql = 'SELECT * FROM users LIMIT 5 OFFSET 0;';
+
+        $q = new Query('SELECT');
+        $q->setTable('users');
+        $q->setPage(1, 5);
+        $q->buildQuery();
+
+        $this->assertEquals($sql, $q->getSql());
+        $this->assertEquals([], $q->getBinds());
+
+        $sql = 'SELECT * FROM users LIMIT 5 OFFSET 10;';
+
+        $q = new Query('SELECT');
+        $q->setTable('users');
+        $q->setPage(3, 5);
+        $q->buildQuery();
+
+        $this->assertEquals($sql, $q->getSql());
+        $this->assertEquals([], $q->getBinds());
     }
 
     public function testQuerySelectJoins()

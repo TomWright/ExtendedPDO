@@ -791,4 +791,22 @@ class Query
         return $this;
     }
 
+
+    /**
+     * @param int $page
+     * @param null|int $perPage
+     * @throws \Exception
+     */
+    public function setPage($page, $perPage = null)
+    {
+        if ($perPage === null) {
+            $perPage = $this->getLimit();
+        }
+        if ($perPage === null) {
+            throw new \Exception('Either perPage or limit needs to be set.');
+        }
+        $this->setOffset(($page - 1) * $perPage);
+        $this->setLimit($perPage);
+    }
+
 }
