@@ -106,6 +106,9 @@ class Query
         $this->setBinds([]);
         $this->setBuilding(false);
         $this->setJoins([]);
+        $this->setGroupBys([]);
+        $this->setOrderBys([]);
+        $this->setWheres([]);
     }
 
 
