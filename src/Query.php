@@ -93,10 +93,13 @@ class Query
 
     /**
      * Query constructor.
-     * @throws \Exception
+     * @param string|null $type
      */
-    public function __construct()
+    public function __construct($type = null)
     {
+        if ($type !== null) {
+            $this->setType($type);
+        }
         $this->setFields(['*']);
         $this->setValues([]);
         $this->setRuntimeBinds([]);
@@ -603,9 +606,13 @@ class Query
 
     /**
      * @return $this
+     * @throws \Exception
      */
     public function buildQuery()
     {
+        if ($this->getType() === null) {
+            throw new \Exception("Missing Query Type.");
+        }
         $this->sql = '';
         $this->setBuilding(true);
 
