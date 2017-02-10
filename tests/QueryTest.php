@@ -130,4 +130,19 @@ class QueryTest extends TestCase
         ], $q->getBinds());
     }
 
+    public function testQueryDelete()
+    {
+        $sql = 'DELETE FROM users WHERE username = :_where_username;';
+
+        $q = new Query('DELETE');
+        $q->setTable('users');
+        $q->addWhere('username', 'Tod');
+        $q->buildQuery();
+
+        $this->assertEquals($sql, $q->getSql());
+        $this->assertEquals([
+            ':_where_username' => 'Tod',
+        ], $q->getBinds());
+    }
+
 }

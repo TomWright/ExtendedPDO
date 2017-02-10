@@ -392,6 +392,7 @@ class Query
                 $this->buildQueryFields();
                 break;
             case 'UPDATE':
+            case 'DELETE':
                 $this->sql .= "{$this->getType()}";
                 break;
             case 'INSERT':
@@ -409,6 +410,7 @@ class Query
     {
         switch ($this->getType()) {
             case 'SELECT':
+            case 'DELETE':
                 $this->sql .= " FROM {$this->getTable()}";
                 break;
             case 'UPDATE':
@@ -446,7 +448,9 @@ class Query
                 break;
         }
 
-        $this->sql .= ' ' . $fieldsString;
+        if (strlen($fieldsString) > 0) {
+            $this->sql .= ' ' . $fieldsString;
+        }
 
         return $this;
     }
