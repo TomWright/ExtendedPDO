@@ -440,11 +440,16 @@ class Query
                 $fieldsString = 'SET ';
                 $values = $this->getValues();
                 foreach ($values as $name => $val) {
-                    $bindParamName = ":_update_bind_{$name}";
-                    $fieldsString .= "{$name} = {$bindParamName},";
-                    $this->addBind($bindParamName, $val);
+                    if (strpos($name, static::$RAW_SQL_IDENTIFIER) === 0) {
+                        $name = substr($name, strlen(static::$RAW_SQL_IDENTIFIER));
+                        $fieldsString .= "{$name} = {$val}, ";
+                    } else {
+                        $bindParamName = ":_update_bind_{$name}";
+                        $fieldsString .= "{$name} = {$bindParamName}, ";
+                        $this->addBind($bindParamName, $val);
+                    }
                 }
-                $fieldsString = rtrim($fieldsString, ',');
+                $fieldsString = rtrim($fieldsString, ', ');
                 break;
         }
 
@@ -790,11 +795,27 @@ class Query
     /**
      * @param string $name
      * @param mixed $value
+     * @param bool $raw
      * @return $this
      */
-    public function addValue($name, $value)
+    public function addValue($name, $value, $raw = false)
     {
+        if ($raw) {
+            $name = static::$RAW_SQL_IDENTIFIER . $name;
+        }
         $this->values[$name] = $value;
+        return $this;
+    }
+
+
+    /**
+     * @param string $name
+     * @param mixed $value
+     * @return $this
+     */
+    public function addRawValue($name, $value)
+    {
+        $this->addValue($name, $value, true);
         return $this;
     }
 

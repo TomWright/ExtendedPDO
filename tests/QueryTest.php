@@ -111,11 +111,26 @@ class QueryTest extends TestCase
             ':_update_bind_username' => 'Tod',
             ':_where_username' => 'Frank',
         ], $q->getBinds());
+
+        $sql = 'UPDATE users SET username = :_update_bind_username, dt_modified = NOW() WHERE username = :_where_username;';
+
+        $q = new Query('UPDATE');
+        $q->setTable('users');
+        $q->addValue('username', 'Tod');
+        $q->addRawValue('dt_modified', 'NOW()');
+        $q->addWhere('username', 'Frank');
+        $q->buildQuery();
+
+        $this->assertEquals($sql, $q->getSql());
+        $this->assertEquals([
+            ':_update_bind_username' => 'Tod',
+            ':_where_username' => 'Frank',
+        ], $q->getBinds());
     }
 
     public function testQueryInsert()
     {
-        $sql = 'INSERT INTO users SET username = :_update_bind_username,password = :_update_bind_password;';
+        $sql = 'INSERT INTO users SET username = :_update_bind_username, password = :_update_bind_password;';
 
         $q = new Query('INSERT');
         $q->setTable('users');
