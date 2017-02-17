@@ -823,6 +823,7 @@ class Query
     /**
      * @param int $page
      * @param null|int $perPage
+     * @return $this
      * @throws \Exception
      */
     public function setPage($page, $perPage = null)
@@ -835,6 +836,7 @@ class Query
         }
         $this->setOffset(($page - 1) * $perPage);
         $this->setLimit($perPage);
+        return $this;
     }
 
 }
