@@ -160,4 +160,41 @@ class QueryTest extends TestCase
         ], $q->getBinds());
     }
 
+    public function testQueryConvertInt()
+    {
+        $sql = 'DELETE FROM users WHERE active = :_where_active;';
+
+        $q = new Query('DELETE');
+        $q->setTable('users');
+        $q->addWhere('active', false);
+        $q->buildQuery();
+
+        $this->assertEquals($sql, $q->getSql());
+        $this->assertEquals([
+            ':_where_active' => 0,
+        ], $q->getBinds());
+
+        $q->addWhere('active', true);
+        $q->buildQuery();
+
+        $this->assertEquals([
+            ':_where_active' => 1,
+        ], $q->getBinds());
+
+        $q->setConvertBoolToInt(false);
+        $q->addWhere('active', false);
+        $q->buildQuery();
+
+        $this->assertEquals([
+            ':_where_active' => false,
+        ], $q->getBinds());
+
+        $q->addWhere('active', true);
+        $q->buildQuery();
+
+        $this->assertEquals([
+            ':_where_active' => true,
+        ], $q->getBinds());
+    }
+
 }

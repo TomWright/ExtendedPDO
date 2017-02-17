@@ -77,6 +77,11 @@ class Query
      */
     protected $building;
 
+    /**
+     * @var bool
+     */
+    protected $convertBoolToInt;
+
 
     /**
      * @param Query|null $query
@@ -109,6 +114,7 @@ class Query
         $this->setGroupBys([]);
         $this->setOrderBys([]);
         $this->setWheres([]);
+        $this->setConvertBoolToInt(true);
     }
 
 
@@ -446,6 +452,9 @@ class Query
                     } else {
                         $bindParamName = ":_update_bind_{$name}";
                         $fieldsString .= "{$name} = {$bindParamName}, ";
+                        if ($this->shouldConvertBoolToInt() && is_bool($val)) {
+                            $val = $val ? 1 : 0;
+                        }
                         $this->addBind($bindParamName, $val);
                     }
                 }
@@ -508,6 +517,9 @@ class Query
                         $x++;
                         $paramId = ":_where_in_{$safeCol}_{$x}";
                         $whereString .= "{$paramId},";
+                        if ($this->shouldConvertBoolToInt() && is_bool($v)) {
+                            $v = $v ? 1 : 0;
+                        }
                         $this->addBind($paramId, $v);
                     }
                     $whereString = rtrim($whereString, ',');
@@ -527,6 +539,9 @@ class Query
                     $safeCol = str_replace('.', '_', $col);
 
                     $whereString .= "{$separator} {$col} {$comparison} :_where_{$safeCol}";
+                    if ($this->shouldConvertBoolToInt() && is_bool($val)) {
+                        $val = $val ? 1 : 0;
+                    }
                     $this->addBind(":_where_{$safeCol}", $val);
                 }
                 $firstWhere = false;
@@ -836,6 +851,26 @@ class Query
         }
         $this->setOffset(($page - 1) * $perPage);
         $this->setLimit($perPage);
+        return $this;
+    }
+
+
+    /**
+     * @return bool
+     */
+    public function shouldConvertBoolToInt()
+    {
+        return ($this->convertBoolToInt == true);
+    }
+
+
+    /**
+     * @param bool $convertBoolToInt
+     * @return $this
+     */
+    public function setConvertBoolToInt($convertBoolToInt)
+    {
+        $this->convertBoolToInt = ($convertBoolToInt == true);
         return $this;
     }
 
