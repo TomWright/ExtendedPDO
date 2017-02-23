@@ -36,7 +36,7 @@ To see more information on how to do this, see the [method arguments in the sour
 
 ## Query Builder
 
-ExtendedPDO also comes with it's own [Query Builder](stc/Query.php).
+ExtendedPDO also comes with it's own [Query Builder](src/Query.php).
 
 ### Quick Examples
 
@@ -127,7 +127,7 @@ Using raw values will NOT use PDO bind parameters and so your SQL queries may be
 
 ### Joins
 
-Create an instance of the [Join class](stc/Join.php) and then add it to a Query.
+Create an instance of the [Join class](src/Join.php) and then add it to a Query.
 
     $query
         ->setTable('users')
