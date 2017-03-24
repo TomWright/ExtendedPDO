@@ -550,7 +550,7 @@ class Query
             $firstWhere = true;
             foreach ($wheres as $col => $val) {
                 $separator = $firstWhere ? 'WHERE' : ' AND';
-                if (strpos($col, static::$RAW_SQL_IDENTIFIER) === 0) {
+                if (strpos($col, static::$RAW_SQL_IDENTIFIER) === 0 && is_string($val)) {
                     $whereString .= "{$separator} {$val}";
                 } elseif (is_array($val)) {
                     $safeCol = str_replace('.', '_', $col);
