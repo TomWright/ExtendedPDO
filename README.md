@@ -124,6 +124,23 @@ Using the Query Builder here takes advantage of PDO bind parameters and makes yo
 Using raw values will NOT use PDO bind parameters and so your SQL queries may be vulnerable to SQL Injection.
 
     $query->addRawValue('users.dt_registered', 'NOW()');
+    
+### ON DUPLICATE KEY UPDATE
+
+Sometimes you may need to use the `ON DUPLICATE KEY UPDATE` SQL syntax. This is achieved by doing the following.
+
+    $query->addOnDupeValue('users.username', 'Tom');
+
+A full query may look something like this.
+    
+    $q = new Query('INSERT');
+    $q->setTable('users');
+    $q->addValue('username', 'Tod');
+    $q->addValue('password', 'abcdef');
+    $q->addOnDupeValue('password', 'abcdef');
+    $q->buildQuery();
+    
+    $q->getSql(); // INSERT INTO users SET username = :_update_bind_username, password = :_update_bind_password ON DUPLICATE KEY UPDATE password = :_dupe_update_bind_password;
 
 ### Joins
 

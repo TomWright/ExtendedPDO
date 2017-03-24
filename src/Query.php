@@ -38,6 +38,11 @@ class Query
     protected $values;
 
     /**
+     * @var array
+     */
+    protected $onDupeValues;
+
+    /**
      * @var string
      */
     protected $table;
@@ -107,6 +112,7 @@ class Query
         }
         $this->setFields(['*']);
         $this->setValues([]);
+        $this->setOnDupeValues([]);
         $this->setRuntimeBinds([]);
         $this->setBinds([]);
         $this->setBuilding(false);
@@ -473,6 +479,44 @@ class Query
     /**
      * @return $this
      */
+    protected function buildOnDupeValues()
+    {
+        if ($this->getType() !== 'INSERT') {
+            return;
+        }
+
+        $values = $this->getOnDupeValues();
+        if (! (is_array($values) && count($values) > 0)) {
+            return;
+        }
+
+        $fieldsString = 'ON DUPLICATE KEY UPDATE ';
+        foreach ($values as $name => $val) {
+            if (strpos($name, static::$RAW_SQL_IDENTIFIER) === 0) {
+                $name = substr($name, strlen(static::$RAW_SQL_IDENTIFIER));
+                $fieldsString .= "{$name} = {$val}, ";
+            } else {
+                $bindParamName = ":_dupe_update_bind_{$name}";
+                $fieldsString .= "{$name} = {$bindParamName}, ";
+                if ($this->shouldConvertBoolToInt() && is_bool($val)) {
+                    $val = $val ? 1 : 0;
+                }
+                $this->addBind($bindParamName, $val);
+            }
+        }
+        $fieldsString = rtrim($fieldsString, ', ');
+
+        if (strlen($fieldsString) > 0) {
+            $this->sql .= ' ' . $fieldsString;
+        }
+
+        return $this;
+    }
+
+
+    /**
+     * @return $this
+     */
     protected function buildQueryJoins()
     {
         $validTypes = ['SELECT', 'UPDATE', 'DELETE'];
@@ -649,6 +693,7 @@ class Query
         $this->buildQueryTable();
         $this->buildQueryJoins();
         $this->buildQueryWheres();
+        $this->buildOnDupeValues();
         $this->buildQueryGroupBys();
         $this->buildQueryOrderBys();
         $this->buildQueryLimit();
@@ -831,6 +876,54 @@ class Query
     public function addRawValue($name, $value)
     {
         $this->addValue($name, $value, true);
+        return $this;
+    }
+
+
+    /**
+     * @return array
+     */
+    public function getOnDupeValues()
+    {
+        return $this->onDupeValues;
+    }
+
+
+    /**
+     * @param array $onDupeValues
+     * @return $this
+     */
+    public function setOnDupeValues(array $onDupeValues)
+    {
+        $this->onDupeValues = $onDupeValues;
+        return $this;
+    }
+
+
+    /**
+     * @param string $name
+     * @param mixed $value
+     * @param bool $raw
+     * @return $this
+     */
+    public function addOnDupeValue($name, $value, $raw = false)
+    {
+        if ($raw) {
+            $name = static::$RAW_SQL_IDENTIFIER . $name;
+        }
+        $this->onDupeValues[$name] = $value;
+        return $this;
+    }
+
+
+    /**
+     * @param string $name
+     * @param mixed $value
+     * @return $this
+     */
+    public function addOnDupeRawValue($name, $value)
+    {
+        $this->addOnDupeValue($name, $value, true);
         return $this;
     }
 

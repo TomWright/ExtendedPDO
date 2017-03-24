@@ -145,6 +145,25 @@ class QueryTest extends TestCase
         ], $q->getBinds());
     }
 
+    public function testQueryInsertOnDuplicateKeyUpdate()
+    {
+        $sql = 'INSERT INTO users SET username = :_update_bind_username, password = :_update_bind_password ON DUPLICATE KEY UPDATE password = :_dupe_update_bind_password;';
+
+        $q = new Query('INSERT');
+        $q->setTable('users');
+        $q->addValue('username', 'Tod');
+        $q->addValue('password', 'abcdef');
+        $q->addOnDupeValue('password', 'abcdef');
+        $q->buildQuery();
+
+        $this->assertEquals($sql, $q->getSql());
+        $this->assertEquals([
+            ':_update_bind_username' => 'Tod',
+            ':_update_bind_password' => 'abcdef',
+            ':_dupe_update_bind_password' => 'abcdef',
+        ], $q->getBinds());
+    }
+
     public function testQueryDelete()
     {
         $sql = 'DELETE FROM users WHERE username = :_where_username;';
