@@ -201,3 +201,38 @@ If you were on the 2nd page, and displayed 5 records per page it would look like
     $query->setPage(2, 5);
 
 In the background this simply sets a limit of 5 and an offset of 5.
+
+### Sub Queries
+
+If you are looking to use sub-queries but still want to use the query builder then you have come to the right place.
+
+Using sub-queries in the following manner will still use PDO prepared statements so as your queries are always safe from SQL injection.
+
+#### Sub Queries in WHERE clause
+
+Simply build your sub-query and pass that into the `where` method of another query using `%SQL` as a replacement placeholder for the SQL.
+
+Desired SQL query:
+    
+    SELECT * FROM users
+    WHERE user_id IN (
+            SELECT user_id
+            FROM deleted_users
+            WHERE deleted_users.deleted = 1
+            AND username != 'Jim';
+        )
+    AND username != 'Tom';
+
+PHP Code:
+
+    $subQ = new Query('SELECT');
+    $subQ->setTable('deleted_users');
+    $subQ->setFields(['user_id']);
+    $subQ->addWhere('deleted_users.deleted', true);
+    $subQ->addWhere('username !=', 'Jim');
+    
+    $q = new Query('SELECT');
+    $q->setTable('users');
+    $q->addWhere('user_id IN (%SQL%)', $subQ);
+    $q->addWhere('username !=', 'Tom');
+    $q->buildQuery();
