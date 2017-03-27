@@ -87,6 +87,11 @@ class Query
      */
     protected $convertBoolToInt;
 
+    /**
+     * @var int
+     */
+    protected $queryId;
+
 
     /**
      * @param Query|null $query
@@ -121,6 +126,18 @@ class Query
         $this->setOrderBys([]);
         $this->setWheres([]);
         $this->setConvertBoolToInt(true);
+    }
+
+
+    /**
+     * @return int
+     */
+    public function getQueryId()
+    {
+        if ($this->queryId === null) {
+            $this->queryId = rand();
+        }
+        return $this->queryId;
     }
 
 
@@ -456,7 +473,7 @@ class Query
                         $name = substr($name, strlen(static::$RAW_SQL_IDENTIFIER));
                         $fieldsString .= "{$name} = {$val}, ";
                     } else {
-                        $bindParamName = ":_update_bind_{$name}";
+                        $bindParamName = ":_{$this->getQueryId()}_update_bind_{$name}";
                         $fieldsString .= "{$name} = {$bindParamName}, ";
                         if ($this->shouldConvertBoolToInt() && is_bool($val)) {
                             $val = $val ? 1 : 0;
@@ -496,7 +513,7 @@ class Query
                 $name = substr($name, strlen(static::$RAW_SQL_IDENTIFIER));
                 $fieldsString .= "{$name} = {$val}, ";
             } else {
-                $bindParamName = ":_dupe_update_bind_{$name}";
+                $bindParamName = ":_{$this->getQueryId()}_dupe_update_bind_{$name}";
                 $fieldsString .= "{$name} = {$bindParamName}, ";
                 if ($this->shouldConvertBoolToInt() && is_bool($val)) {
                     $val = $val ? 1 : 0;
@@ -552,6 +569,19 @@ class Query
                 $separator = $firstWhere ? 'WHERE' : ' AND';
                 if (strpos($col, static::$RAW_SQL_IDENTIFIER) === 0 && is_string($val)) {
                     $whereString .= "{$separator} {$val}";
+                } elseif (is_object($val) && $val instanceof Query && $val->getType() === 'SELECT') {
+                    $val->buildQuery();
+
+                    $subSql = $val->getSql();
+                    $subBinds = $val->getBinds();
+
+                    $whereSql = str_replace('%SQL%', $subSql, $col);
+
+                    foreach ($subBinds as $k => $v) {
+                        $this->addBind($k, $v);
+                    }
+
+                    $whereString .= "{$separator} {$whereSql}";
                 } elseif (is_array($val)) {
                     $safeCol = str_replace('.', '_', $col);
                     $whereString .= "{$separator} {$col} IN (";
@@ -559,7 +589,7 @@ class Query
                     $x = 0;
                     foreach ($val as $v) {
                         $x++;
-                        $paramId = ":_where_in_{$safeCol}_{$x}";
+                        $paramId = ":_{$this->getQueryId()}_where_in_{$safeCol}_{$x}";
                         $whereString .= "{$paramId},";
                         if ($this->shouldConvertBoolToInt() && is_bool($v)) {
                             $v = $v ? 1 : 0;
@@ -582,11 +612,12 @@ class Query
                     }
                     $safeCol = str_replace('.', '_', $col);
 
-                    $whereString .= "{$separator} {$col} {$comparison} :_where_{$safeCol}";
+                    $bindId = ":_{$this->getQueryId()}_where_{$safeCol}";
+                    $whereString .= "{$separator} {$col} {$comparison} {$bindId}";
                     if ($this->shouldConvertBoolToInt() && is_bool($val)) {
                         $val = $val ? 1 : 0;
                     }
-                    $this->addBind(":_where_{$safeCol}", $val);
+                    $this->addBind($bindId, $val);
                 }
                 $firstWhere = false;
             }

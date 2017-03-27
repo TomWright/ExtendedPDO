@@ -21,31 +21,29 @@ class QueryTest extends TestCase
 
     public function testQuerySelectWheres()
     {
-        $sql = 'SELECT * FROM users WHERE user_id = :_where_user_id;';
-
         $q = new Query('SELECT');
         $q->setTable('users');
         $q->addWhere('user_id', 5);
         $q->buildQuery();
 
+        $sql = "SELECT * FROM users WHERE user_id = :_{$q->getQueryId()}_where_user_id;";
+
         $this->assertEquals($sql, $q->getSql());
         $this->assertEquals([
-            ':_where_user_id' => 5,
+            ":_{$q->getQueryId()}_where_user_id" => 5,
         ], $q->getBinds());
-
-        $sql = 'SELECT * FROM users WHERE user_id = :_where_user_id AND username != :_where_username;';
 
         $q->addWhere('user_id', 5);
         $q->addWhere('username !=', 'Frank');
         $q->buildQuery();
 
+        $sql = "SELECT * FROM users WHERE user_id = :_{$q->getQueryId()}_where_user_id AND username != :_{$q->getQueryId()}_where_username;";
+
         $this->assertEquals($sql, $q->getSql());
         $this->assertEquals([
-            ':_where_user_id' => 5,
-            ':_where_username' => 'Frank',
+            ":_{$q->getQueryId()}_where_user_id" => 5,
+            ":_{$q->getQueryId()}_where_username" => 'Frank',
         ], $q->getBinds());
-
-        $sql = 'SELECT * FROM users WHERE user_id = :_where_user_id AND username != :_where_username AND (age <= :min_age OR age >= :max_age);';
 
         $q->addWhere('user_id', 5);
         $q->addWhere('username !=', 'Frank');
@@ -54,10 +52,12 @@ class QueryTest extends TestCase
         $q->addBind(':max_age', 23);
         $q->buildQuery();
 
+        $sql = "SELECT * FROM users WHERE user_id = :_{$q->getQueryId()}_where_user_id AND username != :_{$q->getQueryId()}_where_username AND (age <= :min_age OR age >= :max_age);";
+
         $this->assertEquals($sql, $q->getSql());
         $this->assertEquals([
-            ':_where_user_id' => 5,
-            ':_where_username' => 'Frank',
+            ":_{$q->getQueryId()}_where_user_id" => 5,
+            ":_{$q->getQueryId()}_where_username" => 'Frank',
             ':min_age' => 18,
             ':max_age' => 23,
         ], $q->getBinds());
@@ -96,23 +96,45 @@ class QueryTest extends TestCase
         $this->assertEquals([], $q->getBinds());
     }
 
+    public function testQuerySelectWhereSubQuery()
+    {
+        $subQ = new Query('SELECT');
+        $subQ->setTable('deleted_users');
+        $subQ->setFields(['user_id']);
+        $subQ->addWhere('deleted_users.deleted', true);
+        $subQ->addWhere('username !=', 'Jim');
+
+        $q = new Query('SELECT');
+        $q->setTable('users');
+        $q->addWhere('user_id IN (%SQL%)', $subQ);
+        $q->addWhere('username !=', 'Tom');
+        $q->buildQuery();
+
+        $sql = "SELECT * FROM users WHERE user_id IN (SELECT user_id FROM deleted_users WHERE deleted_users.deleted = :_{$subQ->getQueryId()}_where_deleted_users_deleted AND username != :_{$subQ->getQueryId()}_where_username;) AND username != :_{$q->getQueryId()}_where_username;";
+
+        $this->assertEquals($sql, $q->getSql());
+        $this->assertEquals([
+            ":_{$subQ->getQueryId()}_where_deleted_users_deleted" => 1,
+            ":_{$subQ->getQueryId()}_where_username" => 'Jim',
+            ":_{$q->getQueryId()}_where_username" => 'Tom',
+        ], $q->getBinds());
+    }
+
     public function testQueryUpdate()
     {
-        $sql = 'UPDATE users SET username = :_update_bind_username WHERE username = :_where_username;';
-
         $q = new Query('UPDATE');
         $q->setTable('users');
         $q->addValue('username', 'Tod');
         $q->addWhere('username', 'Frank');
         $q->buildQuery();
 
+        $sql = "UPDATE users SET username = :_{$q->getQueryId()}_update_bind_username WHERE username = :_{$q->getQueryId()}_where_username;";
+
         $this->assertEquals($sql, $q->getSql());
         $this->assertEquals([
-            ':_update_bind_username' => 'Tod',
-            ':_where_username' => 'Frank',
+            ":_{$q->getQueryId()}_update_bind_username" => 'Tod',
+            ":_{$q->getQueryId()}_where_username" => 'Frank',
         ], $q->getBinds());
-
-        $sql = 'UPDATE users SET username = :_update_bind_username, dt_modified = NOW() WHERE username = :_where_username;';
 
         $q = new Query('UPDATE');
         $q->setTable('users');
@@ -121,34 +143,34 @@ class QueryTest extends TestCase
         $q->addWhere('username', 'Frank');
         $q->buildQuery();
 
+        $sql = "UPDATE users SET username = :_{$q->getQueryId()}_update_bind_username, dt_modified = NOW() WHERE username = :_{$q->getQueryId()}_where_username;";
+
         $this->assertEquals($sql, $q->getSql());
         $this->assertEquals([
-            ':_update_bind_username' => 'Tod',
-            ':_where_username' => 'Frank',
+            ":_{$q->getQueryId()}_update_bind_username" => 'Tod',
+            ":_{$q->getQueryId()}_where_username" => 'Frank',
         ], $q->getBinds());
     }
 
     public function testQueryInsert()
     {
-        $sql = 'INSERT INTO users SET username = :_update_bind_username, password = :_update_bind_password;';
-
         $q = new Query('INSERT');
         $q->setTable('users');
         $q->addValue('username', 'Tod');
         $q->addValue('password', 'abcdef');
         $q->buildQuery();
 
+        $sql = "INSERT INTO users SET username = :_{$q->getQueryId()}_update_bind_username, password = :_{$q->getQueryId()}_update_bind_password;";
+
         $this->assertEquals($sql, $q->getSql());
         $this->assertEquals([
-            ':_update_bind_username' => 'Tod',
-            ':_update_bind_password' => 'abcdef',
+            ":_{$q->getQueryId()}_update_bind_username" => 'Tod',
+            ":_{$q->getQueryId()}_update_bind_password" => 'abcdef',
         ], $q->getBinds());
     }
 
     public function testQueryInsertOnDuplicateKeyUpdate()
     {
-        $sql = 'INSERT INTO users SET username = :_update_bind_username, password = :_update_bind_password ON DUPLICATE KEY UPDATE password = :_dupe_update_bind_password;';
-
         $q = new Query('INSERT');
         $q->setTable('users');
         $q->addValue('username', 'Tod');
@@ -156,48 +178,50 @@ class QueryTest extends TestCase
         $q->addOnDupeValue('password', 'abcdef');
         $q->buildQuery();
 
+        $sql = "INSERT INTO users SET username = :_{$q->getQueryId()}_update_bind_username, password = :_{$q->getQueryId()}_update_bind_password ON DUPLICATE KEY UPDATE password = :_{$q->getQueryId()}_dupe_update_bind_password;";
+
         $this->assertEquals($sql, $q->getSql());
         $this->assertEquals([
-            ':_update_bind_username' => 'Tod',
-            ':_update_bind_password' => 'abcdef',
-            ':_dupe_update_bind_password' => 'abcdef',
+            ":_{$q->getQueryId()}_update_bind_username" => 'Tod',
+            ":_{$q->getQueryId()}_update_bind_password" => 'abcdef',
+            ":_{$q->getQueryId()}_dupe_update_bind_password" => 'abcdef',
         ], $q->getBinds());
     }
 
     public function testQueryDelete()
     {
-        $sql = 'DELETE FROM users WHERE username = :_where_username;';
-
         $q = new Query('DELETE');
         $q->setTable('users');
         $q->addWhere('username', 'Tod');
         $q->buildQuery();
 
+        $sql = "DELETE FROM users WHERE username = :_{$q->getQueryId()}_where_username;";
+
         $this->assertEquals($sql, $q->getSql());
         $this->assertEquals([
-            ':_where_username' => 'Tod',
+            ":_{$q->getQueryId()}_where_username" => 'Tod',
         ], $q->getBinds());
     }
 
     public function testQueryConvertInt()
     {
-        $sql = 'DELETE FROM users WHERE active = :_where_active;';
-
         $q = new Query('DELETE');
         $q->setTable('users');
         $q->addWhere('active', false);
         $q->buildQuery();
 
+        $sql = "DELETE FROM users WHERE active = :_{$q->getQueryId()}_where_active;";
+
         $this->assertEquals($sql, $q->getSql());
         $this->assertEquals([
-            ':_where_active' => 0,
+            ":_{$q->getQueryId()}_where_active" => 0,
         ], $q->getBinds());
 
         $q->addWhere('active', true);
         $q->buildQuery();
 
         $this->assertEquals([
-            ':_where_active' => 1,
+            ":_{$q->getQueryId()}_where_active" => 1,
         ], $q->getBinds());
 
         $q->setConvertBoolToInt(false);
@@ -205,14 +229,14 @@ class QueryTest extends TestCase
         $q->buildQuery();
 
         $this->assertEquals([
-            ':_where_active' => false,
+            ":_{$q->getQueryId()}_where_active" => false,
         ], $q->getBinds());
 
         $q->addWhere('active', true);
         $q->buildQuery();
 
         $this->assertEquals([
-            ':_where_active' => true,
+            ":_{$q->getQueryId()}_where_active" => true,
         ], $q->getBinds());
     }
 
