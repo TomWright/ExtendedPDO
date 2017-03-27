@@ -210,7 +210,7 @@ Using sub-queries in the following manner will still use PDO prepared statements
 
 #### Sub Queries in WHERE clause
 
-Simply build your sub-query and pass that into the `where` method of another query using `%SQL` as a replacement placeholder for the SQL.
+Simply build your sub-query and pass that into the `where` method of another query using `%SQL%` as a replacement placeholder for the SQL.
 
 Desired SQL query:
     
