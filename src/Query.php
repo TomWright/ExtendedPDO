@@ -582,8 +582,22 @@ class Query
                     }
 
                     $whereString .= "{$separator} {$whereSql}";
+                } elseif (is_object($val) && $val instanceof Like) {
+                    /**
+                     * @var Like $val
+                     */
+                    $val->setColumn($col);
+                    $val->build($this);
+                    $whereSql = $val->getSql();
+                    $whereBinds = $val->getBinds();
+
+                    foreach ($whereBinds as $k => $v) {
+                        $this->addBind($k, $v);
+                    }
+
+                    $whereString .= "{$separator} {$whereSql}";
                 } elseif (is_array($val)) {
-                    $safeCol = str_replace('.', '_', $col);
+                    $safeCol = $this->getSafeColumn($col);
                     $whereString .= "{$separator} {$col} IN (";
 
                     $x = 0;
@@ -610,7 +624,7 @@ class Query
                             $comparison = '=';
                         }
                     }
-                    $safeCol = str_replace('.', '_', $col);
+                    $safeCol = $this->getSafeColumn($col);
 
                     $bindId = ":_{$this->getQueryId()}_where_{$safeCol}";
                     $whereString .= "{$separator} {$col} {$comparison} {$bindId}";
@@ -625,6 +639,16 @@ class Query
             $this->sql .= ' ' . $whereString;
         }
         return $this;
+    }
+
+
+    /**
+     * @param string $column
+     * @return string
+     */
+    public function getSafeColumn($column)
+    {
+        return str_replace('.', '_', $column);
     }
 
 

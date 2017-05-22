@@ -143,6 +143,22 @@ When you use raw SQL you will not benefit from PDO bind parameters and your quer
 
     $query->addRawWhere('users.dt_registered <= NOW()');
     
+## Like
+
+To save having lots of raw SQL when `LIKE` is concerned, you can use the `Like` object in your where clauses.
+
+    SELECT * FROM users WHERE (username LIKE '%Tom%' OR username LIKE '%Jim%');
+
+becomes...
+
+    $like = new Like('contains', ['Tom', 'Jim']);
+
+    $q = new Query('SELECT');
+    $q->setTable('users');
+    $q->addWhere('username', $like);
+    
+The different like types you can use are `contains`, `starts_with` and `ends_with`.
+    
 ## Order Bys
 
     $query->addOrderBy('users.username ASC');

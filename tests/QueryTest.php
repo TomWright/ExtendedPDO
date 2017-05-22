@@ -3,6 +3,7 @@
 
 use PHPUnit\Framework\TestCase;
 use TomWright\Database\ExtendedPDO\Join;
+use TomWright\Database\ExtendedPDO\Like;
 use TomWright\Database\ExtendedPDO\Query;
 
 class QueryTest extends TestCase
@@ -237,6 +238,73 @@ class QueryTest extends TestCase
 
         $this->assertEquals([
             ":_{$q->getQueryId()}_where_active" => true,
+        ], $q->getBinds());
+    }
+
+    public function testQueryWhereLike()
+    {
+        $like = new Like('contains', 'Tom');
+
+        $q = new Query('SELECT');
+        $q->setTable('users');
+        $q->addWhere('username', $like);
+
+        $q->buildQuery();
+
+        $sql = "SELECT * FROM users WHERE (username LIKE :_{$q->getQueryId()}_where_like_{$like->getLikeId()}_username_0);";
+
+        $this->assertEquals($sql, $q->getSql());
+        $this->assertEquals([
+            ":_{$q->getQueryId()}_where_like_{$like->getLikeId()}_username_0" => '%Tom%',
+        ], $q->getBinds());
+
+
+        $like = new Like('starts_with', 'Tom');
+
+        $q = new Query('SELECT');
+        $q->setTable('users');
+        $q->addWhere('username', $like);
+
+        $q->buildQuery();
+
+        $sql = "SELECT * FROM users WHERE (username LIKE :_{$q->getQueryId()}_where_like_{$like->getLikeId()}_username_0);";
+
+        $this->assertEquals($sql, $q->getSql());
+        $this->assertEquals([
+            ":_{$q->getQueryId()}_where_like_{$like->getLikeId()}_username_0" => 'Tom%',
+        ], $q->getBinds());
+
+
+        $like = new Like('ends_with', 'Tom');
+
+        $q = new Query('SELECT');
+        $q->setTable('users');
+        $q->addWhere('username', $like);
+
+        $q->buildQuery();
+
+        $sql = "SELECT * FROM users WHERE (username LIKE :_{$q->getQueryId()}_where_like_{$like->getLikeId()}_username_0);";
+
+        $this->assertEquals($sql, $q->getSql());
+        $this->assertEquals([
+            ":_{$q->getQueryId()}_where_like_{$like->getLikeId()}_username_0" => '%Tom',
+        ], $q->getBinds());
+
+
+        $like = new Like('contains', ['Tom', 'Jim']);
+
+        $q = new Query('SELECT');
+        $q->setTable('users');
+        $q->addWhere('username', $like);
+
+        $q->buildQuery();
+
+        $sql = "SELECT * FROM users WHERE (username LIKE :_{$q->getQueryId()}_where_like_{$like->getLikeId()}_username_0 OR username LIKE :_{$q->getQueryId()}_where_like_{$like->getLikeId()}_username_1);";
+
+        $this->assertEquals($sql, $q->getSql());
+        $this->assertEquals([
+            ":_{$q->getQueryId()}_where_like_{$like->getLikeId()}_username_0" => '%Tom%',
+            ":_{$q->getQueryId()}_where_like_{$like->getLikeId()}_username_1" => '%Jim%',
         ], $q->getBinds());
     }
 
