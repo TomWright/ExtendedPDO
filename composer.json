@@ -9,7 +9,8 @@
     ],
     "require": {
         "phpunit/phpunit": "*",
-        "tomwright/singleton": "*"
+        "tomwright/singleton": "*",
+        "tomwright/db-query-builder": "^1.0"
     },
     "autoload": {
         "psr-4": {

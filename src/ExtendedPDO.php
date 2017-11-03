@@ -4,6 +4,7 @@
 namespace TomWright\Database\ExtendedPDO;
 
 
+use TomWright\Database\QueryBuilder\QueryHelper;
 use TomWright\Singleton\SingletonTrait;
 
 class ExtendedPDO extends \PDO
