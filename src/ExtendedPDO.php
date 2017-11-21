@@ -122,42 +122,44 @@ class ExtendedPDO extends \PDO
             return $stmt;
         }
 
-        switch ($this->returnType) {
-            case ExtendedPDO::RETURN_TYPE_OBJECT:
-                $fetchType = \PDO::FETCH_OBJ;
-                break;
-            case ExtendedPDO::RETURN_TYPE_ASSOC:
-                $fetchType = \PDO::FETCH_ASSOC;
-                break;
-            default:
-                $fetchType = $this->returnType;
-                break;
-        }
-
-        $result = $this->getDefaultQueryResponse();
-
         switch ($queryType) {
             case 'SELECT':
             case 'SHOW':
-                $stmtMethod = ($fetch === 'all') ? 'fetchAll' : 'fetch';
                 if ($stmt->rowCount() > 0) {
-                    $result = $stmt->{$stmtMethod}($fetchType);
+                    $stmtMethod = ($fetch === 'all') ? 'fetchAll' : 'fetch';
+                    return $stmt->{$stmtMethod}($this->getSelectQueryFetchType());
                 }
                 break;
 
             case 'INSERT':
                 if ($stmt->rowCount() > 0) {
-                    $result = $this->lastInsertId();
+                    return $this->lastInsertId();
                 }
                 break;
 
             case 'UPDATE':
             case 'DELETE':
-                $result = $stmt->rowCount();
+                return $stmt->rowCount();
                 break;
         }
 
-        return $result;
+        return $this->getDefaultQueryResponse();
+    }
+
+
+    /**
+     * Returns the fetch type to be used when selecting data.
+     * @return int|string
+     */
+    private function getSelectQueryFetchType()
+    {
+        switch ($this->returnType) {
+            case ExtendedPDO::RETURN_TYPE_OBJECT:
+                return \PDO::FETCH_OBJ;
+            case ExtendedPDO::RETURN_TYPE_ASSOC:
+                return \PDO::FETCH_ASSOC;
+        }
+        return $this->returnType;
     }
 
 
