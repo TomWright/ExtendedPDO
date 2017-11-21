@@ -49,7 +49,7 @@ class ExtendedPDO extends \PDO
      * @param string $passwd
      * @param array $options
      */
-    public function __construct($dsn, $username, $passwd, $options = array())
+    public function __construct($dsn, $username = '', $passwd = '', $options = array())
     {
         parent::__construct($dsn, $username, $passwd, $options);
         $this->setDsn($dsn);
@@ -105,6 +105,7 @@ class ExtendedPDO extends \PDO
      * @param array|null $bind
      * @param string $fetch
      * @return bool|\PDOStatement
+     * @throws Exception
      */
     public function dbQuery($sql, ?array $bind = null, $fetch = 'all')
     {
@@ -113,6 +114,11 @@ class ExtendedPDO extends \PDO
         $this->setLastQuerySql($sql);
 
         $stmt = $this->prepare($sql);
+
+        if ($stmt === false) {
+            $errInfo = $this->errorInfo();
+            throw new Exception('Failed to prepare statement: ' . implode(', ', $errInfo));
+        }
 
         $stmt->execute($bind);
 
