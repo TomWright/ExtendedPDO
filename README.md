@@ -40,4 +40,4 @@ To see more information on how to do this, see the [method arguments in the sour
 
 ## Query Builder
 
-ExtendedPDO also comes with it's own [Query Builder](docs/query_builder.md).
+ExtendedPDO also comes with it's own [Query Builder](https://github.com/TomWright/QueryBuilderPHP).
