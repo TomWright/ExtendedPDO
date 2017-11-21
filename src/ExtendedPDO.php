@@ -32,6 +32,15 @@ class ExtendedPDO extends \PDO
      */
     protected $dsn;
 
+    /**
+     * @var string
+     */
+    protected $returnType = ExtendedPDO::RETURN_TYPE_OBJECT;
+
+    const RETURN_TYPE_OBJECT = 'object';
+    const RETURN_TYPE_ASSOC = 'assoc';
+    const RETURN_TYPE_STMT = 'stmt';
+
 
     /**
      * ExtendedPDO constructor.
@@ -72,26 +81,22 @@ class ExtendedPDO extends \PDO
     /**
      * @param string $sql
      * @param array|null $bind
-     * @param bool $obj
-     * @param bool $returnStmt
      * @return bool|\PDOStatement
      */
-    public function queryRow($sql, array $bind = null, $obj = true, $returnStmt = false)
+    public function queryRow($sql, array $bind = null)
     {
-        return $this->dbQuery($sql, $bind, 'row', $obj, $returnStmt);
+        return $this->dbQuery($sql, $bind, 'row');
     }
 
 
     /**
      * @param string $sql
      * @param array|null $bind
-     * @param bool $obj
-     * @param bool $returnStmt
      * @return bool|\PDOStatement
      */
-    public function queryAll($sql, array $bind = null, $obj = true, $returnStmt = false)
+    public function queryAll($sql, array $bind = null)
     {
-        return $this->dbQuery($sql, $bind, 'all', $obj, $returnStmt);
+        return $this->dbQuery($sql, $bind, 'all');
     }
 
 
@@ -99,15 +104,11 @@ class ExtendedPDO extends \PDO
      * @param string $sql
      * @param array|null $bind
      * @param string $fetch
-     * @param bool $obj
-     * @param bool $returnStmt
      * @return bool|\PDOStatement
      */
-    public function dbQuery($sql, array $bind = null, $fetch = 'all', $obj = true, $returnStmt = false)
+    public function dbQuery($sql, array $bind = null, $fetch = 'all')
     {
         $sql = $this->queryHelper->trim($sql);
-
-        $fetchType = $obj ? \PDO::FETCH_OBJ : \PDO::FETCH_ASSOC;
 
         $this->setLastQuerySql($sql);
 
@@ -121,30 +122,43 @@ class ExtendedPDO extends \PDO
 
         $queryType = $this->queryHelper->getQueryType($sql);
 
-        $result = $stmt;
+        if ($this->returnType === ExtendedPDO::RETURN_TYPE_STMT) {
+            return $stmt;
+        }
 
-        if (! $returnStmt) {
-            $result = $this->getDefaultQueryResponse();
-            switch ($queryType) {
-                case 'SELECT':
-                case 'SHOW':
-                    $stmtMethod = ($fetch === 'all') ? 'fetchAll' : 'fetch';
-                    if ($stmt->rowCount() > 0) {
-                        $result = $stmt->{$stmtMethod}($fetchType);
-                    }
-                    break;
+        switch ($this->returnType) {
+            case ExtendedPDO::RETURN_TYPE_OBJECT:
+                $fetchType = \PDO::FETCH_OBJ;
+                break;
+            case ExtendedPDO::RETURN_TYPE_ASSOC:
+                $fetchType = \PDO::FETCH_ASSOC;
+                break;
+            default:
+                $fetchType = $this->returnType;
+                break;
+        }
 
-                case 'INSERT':
-                    if ($stmt->rowCount() > 0) {
-                        $result = $this->lastInsertId();
-                    }
-                    break;
+        $result = $this->getDefaultQueryResponse();
 
-                case 'UPDATE':
-                case 'DELETE':
-                    $result = $stmt->rowCount();
-                    break;
-            }
+        switch ($queryType) {
+            case 'SELECT':
+            case 'SHOW':
+                $stmtMethod = ($fetch === 'all') ? 'fetchAll' : 'fetch';
+                if ($stmt->rowCount() > 0) {
+                    $result = $stmt->{$stmtMethod}($fetchType);
+                }
+                break;
+
+            case 'INSERT':
+                if ($stmt->rowCount() > 0) {
+                    $result = $this->lastInsertId();
+                }
+                break;
+
+            case 'UPDATE':
+            case 'DELETE':
+                $result = $stmt->rowCount();
+                break;
         }
 
         return $result;
@@ -218,6 +232,24 @@ class ExtendedPDO extends \PDO
     protected function setDsn(string $dsn)
     {
         $this->dsn = $dsn;
+    }
+
+
+    /**
+     * @return string
+     */
+    public function getReturnType(): string
+    {
+        return $this->returnType;
+    }
+
+
+    /**
+     * @param mixed $returnType
+     */
+    public function setReturnType($returnType)
+    {
+        $this->returnType = $returnType;
     }
 
 }

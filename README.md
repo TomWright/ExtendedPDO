@@ -34,9 +34,16 @@ $db->queryAll('SELECT * FROM users WHERE username = :username', [':username' => 
 $db->queryRow('SELECT * FROM users WHERE username = :username LIMIT 1', [':username' => 'Tom']);
 ```
 
-Both `queryRow()` and `queryAll()` are able to return the `\PDOStatement`.
+## Query Return Types
+You can set the return type of the `dbQuery()`, `queryAll()` and `queryRow()` methods using `$db->setReturnType($x)` where `$x` is the return type you'd like to use.
 
-To see more information on how to do this, see the [method arguments in the source code](src/ExtendedPDO.php#L78).
+Available return types are as follows:
+
+- `ExtendedPDO::RETURN_TYPE_OBJECT` - Your results will be returned as objects
+- `ExtendedPDO::RETURN_TYPE_ASSOC` - Your results will be returned as associative arrays
+- `ExtendedPDO::RETURN_TYPE_STMT` - The statement object will be returned directly
+
+You can also set a return type of `\PDO::FETCH_ASSOC` for example and it will override any of the above. This makes all of the standard `PDO` fetch types usable.
 
 ## Query Builder
 
