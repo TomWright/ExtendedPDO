@@ -234,9 +234,9 @@ class ExtendedPDO extends \PDO
 
 
     /**
-     * @return string
+     * @return mixed
      */
-    public function getReturnType(): string
+    public function getReturnType()
     {
         return $this->returnType;
     }
