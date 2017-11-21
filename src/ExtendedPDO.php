@@ -106,7 +106,7 @@ class ExtendedPDO extends \PDO
      * @param string $fetch
      * @return bool|\PDOStatement
      */
-    public function dbQuery($sql, array $bind = null, $fetch = 'all')
+    public function dbQuery($sql, ?array $bind = null, $fetch = 'all')
     {
         $sql = $this->queryHelper->trim($sql);
 
@@ -114,11 +114,7 @@ class ExtendedPDO extends \PDO
 
         $stmt = $this->prepare($sql);
 
-        if (isset($bind) && is_array($bind)) {
-            $stmt->execute($bind);
-        } else {
-            $stmt->execute();
-        }
+        $stmt->execute($bind);
 
         $queryType = $this->queryHelper->getQueryType($sql);
 
